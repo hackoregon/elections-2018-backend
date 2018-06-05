@@ -40,7 +40,9 @@ class TransactionDetailViewSet(viewsets.ModelViewSet):
     queryset = TransactionDetails.objects.all()
     filter_backends = (SearchFilter, DjangoFilterBackend, OrderingFilter)
     ordering_fields = '__all__'
-    search_fields = '__all__'    
+    search_fields = '__all__'
+    filtering_fields = '__all__'
+
 class StatementOfOrgViewSet(viewsets.ModelViewSet):
     serializer_class = StatementOfOrgSerializer
     queryset = StatementOfOrg.objects.all()

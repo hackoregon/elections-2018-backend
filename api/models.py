@@ -17,8 +17,23 @@ class Ballots(models.Model):
         db_table = 'ballots'
 
 
+class CommitteesList(models.Model):
+    id = models.IntegerField(primary_key=True)
+    filer_name = models.CharField(max_length=255, blank=True, null=True)
+    filer_description = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'committees_list'
+
+
 class CommitteeHistory(models.Model):
-    committee_id = models.IntegerField(primary_key=True)
+    committee_id = models.ForeignKey(
+        CommitteesList,
+        db_column="committee_id",
+        to_field="id",
+        on_delete=models.CASCADE,
+    )
     committee_name = models.CharField(max_length=255, blank=True, null=True)
     committee_description = models.CharField(max_length=1024, blank=True, null=True)
     effective = models.DateField(blank=True, null=True)
@@ -28,16 +43,6 @@ class CommitteeHistory(models.Model):
     class Meta:
         managed = False
         db_table = 'committee_history'
-
-
-class CommitteesList(models.Model):
-    id = models.IntegerField(primary_key=True)
-    filer_name = models.CharField(max_length=255, blank=True, null=True)
-    filer_description = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'committees_list'
         
 
 class Donor(models.Model):
@@ -105,8 +110,34 @@ class StatementOfOrg(models.Model):
         db_table = 'statement_of_org'
 
 
-class TransactionDetails(models.Model):
+class Transactions(models.Model):
     transaction_id = models.IntegerField(primary_key=True)
+    committee_id = models.IntegerField(blank=True, null=True)
+    transaction_date = models.DateField(blank=True, null=True)
+    status = models.CharField(max_length=32, blank=True, null=True)
+    filer_committee = models.CharField(max_length=255, blank=True, null=True)
+    contributor_payee = models.CharField(max_length=255, blank=True, null=True)
+    transaction_subtype = models.CharField(max_length=255, blank=True, null=True)
+    amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    
+    @property
+    def total_amount(self):
+        if self.amount.is_nan():
+            return "not available"
+        return self.amount
+
+    class Meta:
+        managed = False
+        db_table = 'transactions'
+
+
+class TransactionDetails(models.Model):
+    transaction_id = models.OneToOneField(
+        Transactions,
+        on_delete=models.CASCADE,
+        db_column="transaction_id",
+        primary_key=True
+    )
     payee_id = models.IntegerField(blank=True, null=True)
     donor_id = models.IntegerField(blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
@@ -146,24 +177,3 @@ class TransactionDetails(models.Model):
     class Meta:
         managed = False
         db_table = 'transaction_details'
-
-
-class Transactions(models.Model):
-    transaction_id = models.IntegerField(primary_key=True)
-    committee_id = models.IntegerField(blank=True, null=True)
-    transaction_date = models.DateField(blank=True, null=True)
-    status = models.CharField(max_length=32, blank=True, null=True)
-    filer_committee = models.CharField(max_length=255, blank=True, null=True)
-    contributor_payee = models.CharField(max_length=255, blank=True, null=True)
-    transaction_subtype = models.CharField(max_length=255, blank=True, null=True)
-    amount = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
-    
-    @property
-    def total_amount(self):
-        if self.amount.is_nan():
-            return "not available"
-        return self.amount
-
-    class Meta:
-        managed = False
-        db_table = 'transactions'
