@@ -8,8 +8,8 @@ services:
   - docker
 
 install:
-  - pip install --upgrade awscli
-
+  - pip install awscli==1.15.84
+  
 script:
   - bin/build.sh -p
   - bin/test.sh -p
